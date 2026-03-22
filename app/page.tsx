@@ -9,7 +9,6 @@ import {
 } from 'lucide-react';
 import Navbar from './_components/Navbar';
 import OnboardingModal from './_components/OnboardingModal';
-import OnboardingModal from './_components/OnboardingModal';
 
 const features = [
   { icon: Sparkles, title: 'AI Background Removal', desc: 'One-click removal & replacement with standard colors — white, light blue, or grey.', color: '#C11C84' },
