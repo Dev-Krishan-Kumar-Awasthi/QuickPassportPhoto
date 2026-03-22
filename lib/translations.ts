@@ -1,6 +1,6 @@
 export const translations = {
   en: {
-    heroTitle: "Passport Photos Done by AI in 15 Seconds",
+    heroTitle: "Best AI Passport Photo Maker — Free & Instant",
     heroDesc: "Upload a selfie. Our AI removes the background, crops to biometric specs, and generates a print-ready sheet — no Photoshop needed.",
     uploadButton: "Upload Photo Free",
     tryFree: "Try Free",
@@ -30,7 +30,7 @@ export const translations = {
     rotate: "Rotate",
   },
   hi: {
-    heroTitle: "AI se Passport Photo banayein sirf 15 Seconds mein",
+    heroTitle: "Sabse Best AI Passport Photo Maker — Sirf 15 Seconds mein",
     heroDesc: "Selfie upload karein. Hamara AI background hatayega, sahi size mein crop karega aur print-ready sheet banayega — Photoshop ki zarurat nahi.",
     uploadButton: "Muft Photo Upload Karein",
     tryFree: "Muft Try Karein",

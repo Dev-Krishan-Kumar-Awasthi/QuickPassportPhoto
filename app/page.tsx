@@ -139,7 +139,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="scroll-animate" style={{ textAlign: 'center', marginBottom: 60 }}>
             <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, color: '#1e293b', marginBottom: 16 }}>
-              A Professional Studio, <span className="text-gradient-purple-pink">Right in Your Browser</span>
+              The Best AI <span className="text-gradient-purple-pink">Passport Photo Maker</span> Studio
             </h2>
             <p style={{ color: '#64748b', fontSize: 18, maxWidth: 600, margin: '0 auto' }}>
               We've automated the most complex studio tasks so you can get perfect results in seconds.
@@ -154,7 +154,7 @@ export default function LandingPage() {
                      {/* REAL IMAGE BACKGROUND */}
                      <img 
                        src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=400&auto=format&fit=crop" 
-                       alt="Professional Male Alignment"
+                       alt="AI Passport Photo Biometric Alignment Guide"
                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                      />
                      {/* SVG OVERLAY GUIDES */}
@@ -183,7 +183,7 @@ export default function LandingPage() {
                         <div key={i} style={{ width: '100%', height: '100%', background: '#fff', overflow: 'hidden', borderRadius: 2 }}>
                            <img 
                               src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=100&auto=format&fit=crop" 
-                              alt="Bulk Grid"
+                              alt="Passport Size Photo Print Sheet Layout"
                               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                            />
                         </div>
@@ -208,7 +208,7 @@ export default function LandingPage() {
                   </div>
                   <div style={{ color: '#673AB7', fontWeight: 900, fontSize: 24 }}>→</div>
                    <div style={{ textAlign: 'center', position: 'relative' }}>
-                      <img src="https://images.unsplash.com/photo-1593032465175-481ac7f402a1?q=80&w=200&auto=format&fit=fit" style={{ width: 130, height: 170, borderRadius: 12, border: '3px solid #673AB7', boxShadow: '0 15px 35px rgba(103, 58, 183, 0.3)', objectFit: 'cover' }} alt="Suit" />
+                      <img src="https://images.unsplash.com/photo-1593032465175-481ac7f402a1?q=80&w=200&auto=format&fit=fit" style={{ width: 130, height: 170, borderRadius: 12, border: '3px solid #673AB7', boxShadow: '0 15px 35px rgba(103, 58, 183, 0.3)', objectFit: 'cover' }} alt="Professional Suit for Passport Photo Online" />
                       <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: 'white', color: 'black', fontSize: 7, fontWeight: 900, width: '80%', padding: '2px 0', border: '0.5px solid black' }}>
                          NAME & DATE OVERLAY
                       </div>
@@ -358,6 +358,50 @@ export default function LandingPage() {
         </div>
       </section>
 
+
+      {/* FAQ Section for SEO */}
+      <section id="faq" style={{ padding: '100px 24px', background: '#fff' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div className="scroll-animate" style={{ textAlign: 'center', marginBottom: 64 }}>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, color: '#1e293b', marginBottom: 16 }}>
+              Frequently Asked <span className="text-gradient-purple-pink">Questions</span>
+            </h2>
+            <p style={{ color: '#64748b', fontSize: 17 }}>Everything you need to know about our Passport Photo Maker.</p>
+          </div>
+
+          <div style={{ display: 'grid', gap: 32 }}>
+            {[
+              { 
+                q: "How to make a passport size photo online for free?", 
+                a: "Simply upload your selfie to QuickPassportPhoto. Our AI will automatically remove the background, crop it to official dimensions (like 3.5x4.5 cm), and generate a print-ready sheet in 15 seconds." 
+              },
+              { 
+                q: "What is the standard passport photo size in India?", 
+                a: "The standard size is 3.5 x 4.5 cm with the face covering 70-80% of the photo. Our tool automatically crops your photo to these exact specifications." 
+              },
+              { 
+                q: "Can I use a mobile selfie for my passport photo?", 
+                a: "Yes! As long as the lighting is good and your face is clear, our AI can transform a standard mobile selfie into a professional biometric passport photo." 
+              },
+              { 
+                q: "How to remove background from passport photo?", 
+                a: "Our AI background remover is specialized for ID photos. It detects your hair and clothes accurately to replace any background with official white, blue, or grey colors instantly." 
+              },
+              { 
+                q: "Is this tool suitable for UPSC or SSC exam forms?", 
+                a: "Absolutely. We offer specific templates for UPSC, SSC, and other Indian competitive exams, including 'Name and Date' overlay options required by many government portals." 
+              }
+            ].map((item, i) => (
+              <div key={i} className="scroll-animate" style={{ padding: 24, background: '#f8fafc', borderRadius: 16, border: '1px solid rgba(0,0,0,0.05)' }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', marginBottom: 12, display: 'flex', gap: 12 }}>
+                  <span style={{ color: '#673AB7' }}>Q.</span> {item.q}
+                </h3>
+                <p style={{ color: '#475569', fontSize: 15, lineHeight: 1.7 }}>{item.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
     </main>
   );

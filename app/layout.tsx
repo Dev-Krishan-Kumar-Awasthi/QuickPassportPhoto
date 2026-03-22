@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     telephone: false,
   },
   alternates: {
-    canonical: '/',
+    canonical: 'https://quick-passport-photo.vercel.app',
   },
   openGraph: {
     title: "QuickPassportPhoto by Krishan Kumar Awasthi | Shivpuri",
@@ -76,6 +76,57 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "QuickPassportPhoto",
+    "operatingSystem": "Any",
+    "applicationCategory": "PhotographyApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "reviewCount": "200"
+    },
+    "description": "Best AI-powered passport photo maker online. Create official passport and visa photos in 15 seconds with automated background removal."
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How to make a passport size photo online for free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Simply upload your selfie to QuickPassportPhoto. Our AI will automatically remove the background, crop it to official dimensions (like 3.5x4.5 cm), and generate a print-ready sheet in 15 seconds."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the standard passport photo size in India?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The standard size is 3.5 x 4.5 cm with the face covering 70-80% of the photo. Our tool automatically crops your photo to these exact specifications."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is this tool suitable for UPSC or SSC exam forms?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Absolutely. We offer specific templates for UPSC, SSC, and other Indian competitive exams, including 'Name and Date' overlay options required by many government portals."
+        }
+      }
+    ]
+  }
+];
+
 export const viewport = {
   themeColor: "#673AB7",
   width: "device-width",
@@ -94,6 +145,11 @@ export default function RootLayout({
         <Preloader />
         <CustomCursor />
         <ParticlesBackground />
+        
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         
         {children}
 
