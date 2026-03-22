@@ -1,7 +1,7 @@
 'use client';
 
 import Navbar from '../_components/Navbar';
-import Footer from '../_components/Footer';
+
 
 export default function PrivacyPage() {
   return (
@@ -28,7 +28,7 @@ export default function PrivacyPage() {
           <p>If you have questions about your privacy, please contact us at support@quickpassportphoto.com.</p>
         </div>
       </div>
-      <Footer />
+
     </main>
   );
 }

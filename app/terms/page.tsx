@@ -1,7 +1,7 @@
 'use client';
 
 import Navbar from '../_components/Navbar';
-import Footer from '../_components/Footer';
+
 
 export default function TermsPage() {
   return (
@@ -28,7 +28,7 @@ export default function TermsPage() {
           <p>We strive for accuracy in biometric cropping, but it is the user's responsibility to verify the final photo meets their specific government requirements before printing/using.</p>
         </div>
       </div>
-      <Footer />
+
     </main>
   );
 }

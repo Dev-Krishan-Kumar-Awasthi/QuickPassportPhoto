@@ -8,7 +8,7 @@ import {
   Camera, Layers, FileImage
 } from 'lucide-react';
 import Navbar from './_components/Navbar';
-import Footer from './_components/Footer';
+import OnboardingModal from './_components/OnboardingModal';
 import OnboardingModal from './_components/OnboardingModal';
 
 const features = [
@@ -359,7 +359,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <Footer />
+
     </main>
   );
 }
