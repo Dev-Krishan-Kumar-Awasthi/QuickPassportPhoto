@@ -1,0 +1,73 @@
+As a top-tier developer, I approach this not as a quick hack, but as a highly scalable SaaS (Software as a Service) product. Our goal is to turn a tedious 15-minute Photoshop chore into a seamless, 15-second automated flow. 
+
+Let's go with **QuickPassportPhoto** as our flagship brand name—it's catchy, global, and clearly communicates speed and identity.
+
+Here is the world-class, fully functional Product Requirements Document (PRD) in English.
+
+---
+
+# 📄 Product Requirements Document (PRD) - QuickPassportPhoto
+
+## 1. Project Overview
+"QuickPassportPhoto is an AI-powered web application designed to 100% automate the passport and ID photo creation process for studio owners, cyber cafes, and everyday users. It enables anyone to generate professional, print-ready photo sheets with zero editing skills."
+
+### 2. Target Audience
+* **B2B (Business-to-Business):** Photo studios, stationery shops, cyber cafes, and local printing centers that handle bulk daily walk-ins.
+* **B2C (Direct-to-Consumer):** Students, professionals, and parents who urgently need standardized photos for forms, visas, or IDs.
+
+---
+
+### 3. Core Features (MVP - Phase 1)
+
+* **Smart AI Image Processing:**
+    * **Auto-Background Removal:** Instantly strips the original background and replaces it with standard solid colors (White, Light Blue, Grey).
+    * **Auto-Biometric Cropping:** AI detects facial features, aligns the shoulders and head ratio, and crops the image to standard passport dimensions (e.g., 3.5cm x 4.5cm or 2x2 inches).
+* **Print-Ready Grid Layout Engine:**
+    * Users can select their physical paper size (e.g., 4x6, 5x7, A4).
+    * The system automatically arranges the cropped photos into a grid (e.g., 8 photos on a 4x6 sheet, 30 photos on an A4 sheet) complete with standard borders and cutting marks (✂️).
+* **Photo Quality Enhancer:**
+    * Auto-adjusts lighting, contrast, and brightness.
+    * Applies slight AI upscaling and sharpening if the uploaded photo is low resolution or slightly blurry.
+* **One-Click Export:** Generates high-resolution, uncompressed PDFs and JPEGs instantly ready for the printer.
+
+### 4. Advanced Features (Pro - Phase 2)
+
+* **AI Magic Wardrobe (Dress Changer):** Allows users to swap casual clothes (like a graphic t-shirt) for formal attire (suits, collared shirts, blazers) with a single click, catering to both male and female styles.
+* **Compliance Checker:** An AI validation tool that checks if the photo meets strict Visa/Passport guidelines (e.g., "Eyes open," "No glasses," "Neutral expression," "Correct lighting").
+* **B2B Studio Dashboard:** A dedicated portal for shop owners to track daily orders, manage credits, and access order history to easily reprint photos for returning customers.
+
+---
+
+### 5. Technical Architecture (The Stack)
+
+| Component | Technology | Why This Choice? |
+| :--- | :--- | :--- |
+| **Frontend UI/UX** | Next.js (React) + Tailwind CSS | Delivers blazing-fast load times, excellent SEO, and a highly responsive, app-like feel on both mobile and desktop. |
+| **Backend & Database** | **Supabase** (PostgreSQL) | Handles secure user authentication, robust relational data (order history, user profiles), and API routing via Edge Functions. |
+| **Storage** | **Supabase Storage** | Securely stores temporary raw uploads and processed final PDFs via scalable storage buckets. |
+| **AI Processing** | Photoroom API / Cloudinary | Industry leaders in edge-accurate background removal and biometric cropping (We can transition to a self-hosted Python model on AWS later to cut costs). |
+| **Payment Gateway** | Stripe / Razorpay | Handles one-time micro-transactions for B2C and subscription billing for B2B users. |
+
+---
+
+### 6. User Journey (The Happy Path)
+
+1. **Upload:** The user visits the site and uploads a selfie or gallery photo via mobile or PC.
+2. **AI Magic (Processing):** A loading screen appears (max 3-5 seconds). Supabase triggers an Edge Function that sends the image to the AI API for background removal and biometric cropping.
+3. **Preview & Customize:** The user sees the polished photo. They can change the background color (blue/white) and select the desired sheet size/quantity (e.g., 8, 16, or 32 photos).
+4. **Checkout:** If they are a new user with a free credit, they proceed. Otherwise, a quick QR/Card payment popup appears for a micro-transaction (e.g., ₹10 or $1).
+5. **Download & Print:** A perfect, high-resolution PDF is generated instantly, which the user can send straight to their local printer.
+
+---
+
+### 7. Monetization Strategy
+
+* **Freemium Model:** Give every new user 1 free sheet download (with a tiny watermark) to prove the magic works.
+* **Pay-per-Sheet (B2C):** Charge a small, fixed fee (e.g., ₹10 - ₹20) for high-resolution, watermark-free downloads.
+* **Pro Subscription (B2B):** A monthly plan (e.g., ₹499/month) for cyber cafes and studios offering unlimited standard prints, dashboard access, and a set amount of "AI Dress Change" credits.
+
+---
+
+Great developers always finalize the UI/UX flow or the database schema before writing a single line of code. 
+
+**Would you like me to map out the frontend screen wireframes first, or should we dive straight into designing the Supabase database schema?**

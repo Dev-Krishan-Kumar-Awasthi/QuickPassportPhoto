@@ -1,0 +1,16 @@
+interface PDFOptions {
+  imageData: string; // Transparent PNG Data URL
+  backgroundColor: string;
+  count: number;
+}
+
+/**
+ * Generates a 4x6 inch PDF with the specified number of passport photos.
+ * Standard 4x6 is 101.6mm x 152.4mm
+ */
+export async function generatePDF({ imageData, backgroundColor, count }: { imageData: string, backgroundColor: string, count: number }): Promise<void> {
+  const { jsPDF } = await import('jspdf/dist/jspdf.es.min.js') as any;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [152.4, 101.6] });
+  doc.addImage(imageData, 'JPEG', 0, 0, 152.4, 101.6);
+  doc.save('passport-photo-sheet.pdf');
+}
