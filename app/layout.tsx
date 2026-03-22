@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   category: "Photography",
   manifest: "/manifest.json",
   verification: {
-    google: "ADD_YOUR_GOOGLE_VERIFICATION_CODE_HERE",
+    google: "gRA9DqcG_Dr6NCAW_thkqXlHJj58SQp1TPur6sUrUSI",
   },
 };
 
