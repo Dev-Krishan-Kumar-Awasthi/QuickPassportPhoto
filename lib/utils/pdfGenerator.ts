@@ -9,6 +9,7 @@ interface PDFOptions {
  * Standard 4x6 is 101.6mm x 152.4mm
  */
 export async function generatePDF({ imageData, backgroundColor, count }: { imageData: string, backgroundColor: string, count: number }): Promise<void> {
+  // @ts-ignore
   const { jsPDF } = await import('jspdf/dist/jspdf.es.min.js') as any;
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [152.4, 101.6] });
   doc.addImage(imageData, 'JPEG', 0, 0, 152.4, 101.6);
