@@ -106,9 +106,7 @@ export default function RootLayout({
               {/* Brand Col */}
               <div style={{ gridColumn: 'span 2' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                  <div style={{ width: 36, height: 36, background: '#673AB7', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Zap size={20} color="white" fill="white" />
-                  </div>
+                  <img src="/Logo.png" alt="QuickPassportPhoto" style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover' }} />
                   <span style={{ fontSize: 20, fontWeight: 800, color: '#1e293b', letterSpacing: '-0.5px' }}>QuickPassportPhoto</span>
                 </div>
                 <p style={{ color: '#64748b', fontSize: 15, lineHeight: 1.6, maxWidth: 320, marginBottom: 24 }}>
