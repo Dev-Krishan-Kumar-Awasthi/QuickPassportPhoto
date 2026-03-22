@@ -9,24 +9,23 @@ import ParticlesBackground from "./_components/ParticlesBackground";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://quickpassportphoto.com'),
+  metadataBase: new URL('https://quick-passport-photo.vercel.app'),
   title: {
-    default: "QuickPassportPhoto | Shivpuri's Best Photo Maker by Krishan Kumar Awasthi",
-    template: "%s | QuickPassportPhoto KKA Shivpuri"
+    default: "QuickPassportPhoto | Best AI Passport Photo Maker by Krishan Kumar Awasthi",
+    template: "%s | QuickPassportPhoto KKA"
   },
-  description: "Create instant passport & ID photos in 15 seconds. Top-rated AI photo studio tool in Shivpuri by Krishan Kumar Awasthi (KKA). Perfect background removal, biometric cropping, and print-ready sheets.",
+  description: "Create official passport & ID photos in 15 seconds. Top-rated AI photo studio tool by Krishan Kumar Awasthi (KKA). Perfect for UPSC, SSC, Visa, and Exam cards with automated background removal and biometric cropping.",
   keywords: [
-    "photo", "shivpuri", "krishan kumar awasthi", "kka", 
-    "photo shivpuri", "shivpuri photo studio", "best photo shivpuri",
-    "krishan kumar awasthi photo", "kka shivpuri", "kka photo",
-    "passport photo shivpuri", "urgent photo shivpuri", "online photo maker",
-    "passport size photo", "ID photo generator", "AI photo", 
-    "background remover shivpuri", "krishan kumar awasthi photography",
-    "quick passport photo", "instant photo sheet", "print ready photo shivpuri"
+    "passport photo maker", "online passport photo", "passport size photo online", 
+    "automatic background remover", "biometric photo maker", "visa photo maker",
+    "upsc photo generator", "ssc photo with date maker", "exam photo editor",
+    "krishan kumar awasthi", "kka shivpuri", "kka developer", "kka photo tool",
+    "id photo maker free", "passport photo print sheet", "4x6 photo sheet maker",
+    "passport photo maker india", "best passport photo tool", "ai background removal"
   ].join(", "),
-  authors: [{ name: "Krishan Kumar Awasthi", url: "https://quickpassportphoto.com" }],
+  authors: [{ name: "Krishan Kumar Awasthi", url: "https://kkawasthi.vercel.app/" }],
   creator: "Krishan Kumar Awasthi (KKA)",
-  publisher: "QuickPassportPhoto Shivpuri",
+  publisher: "QuickPassportPhoto",
   formatDetection: {
     email: false,
     address: false,
@@ -91,6 +90,29 @@ export default function RootLayout({
         <CustomCursor />
         <ParticlesBackground />
         {children}
+        
+        {/* Simple Footer */}
+        <footer style={{ 
+          padding: '40px 24px', textAlign: 'center', position: 'relative', zIndex: 10,
+          background: 'rgba(255,255,255,0.02)', borderTop: '1px solid rgba(0,0,0,0.05)',
+          marginTop: 60
+        }}>
+          <p style={{ color: '#64748b', fontSize: 14, fontWeight: 600 }}>
+            {new Date().getFullYear()} QuickPassportPhoto &copy; All Rights Reserved.
+          </p>
+          <div style={{ marginTop: 8, color: '#475569', fontSize: 15, fontWeight: 700 }}>
+            Designed & Developed by{' '}
+            <a 
+              href="https://kkawasthi.vercel.app/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ color: '#673AB7', textDecoration: 'none', borderBottom: '2px solid rgba(103, 58, 183, 0.2)' }}
+            >
+              Krishan Kumar Awasthi
+            </a>
+          </div>
+        </footer>
+
         <Script id="register-sw" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
