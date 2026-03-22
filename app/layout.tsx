@@ -91,6 +91,9 @@ export default function RootLayout({
         <Preloader />
         <CustomCursor />
         <ParticlesBackground />
+        
+        {children}
+
         {/* Sophisticated Footer */}
         <footer style={{ 
           padding: '80px 24px 40px', position: 'relative', zIndex: 10,
