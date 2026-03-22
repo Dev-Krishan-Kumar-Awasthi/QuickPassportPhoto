@@ -175,30 +175,32 @@ export default function DownloadPage() {
 
       {/* Rating Modal */}
       {showRating && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
-          <div className="card animate-in zoom-in duration-300" style={{ maxWidth: 400, width: '100%', padding: 40, textAlign: 'center', position: 'relative' }}>
-            <button onClick={() => setShowRating(false)} style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 20 }}>&times;</button>
-            <div style={{ width: 64, height: 64, background: 'rgba(103, 58, 183, 0.1)', color: '#673AB7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-              <Zap size={32} />
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(5, 5, 16, 0.7)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}>
+          <div className="card animate-in zoom-in duration-300" style={{ maxWidth: 420, width: '100%', padding: '48px 32px', textAlign: 'center', position: 'relative', background: '#ffffff', border: 'none', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+            <button onClick={() => setShowRating(false)} style={{ position: 'absolute', top: 20, right: 20, background: '#f1f5f9', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 24, width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>&times;</button>
+            <div style={{ width: 72, height: 72, background: 'rgba(103, 58, 183, 0.1)', color: '#673AB7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 28px' }}>
+              <Zap size={40} fill="#673AB7" />
             </div>
-            <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1e293b', marginBottom: 12 }}>{lang === 'en' ? 'Help us improve!' : 'Hamari help karein!'}</h2>
-            <p style={{ color: '#64748b', marginBottom: 32, fontWeight: 500, lineHeight: 1.5 }}>
+            <h2 style={{ fontSize: 28, fontWeight: 900, color: '#1e293b', marginBottom: 12, letterSpacing: '-0.5px' }}>{lang === 'en' ? 'Help us improve!' : 'Hamari help karein!'}</h2>
+            <p style={{ color: '#475569', marginBottom: 36, fontWeight: 600, fontSize: 16, lineHeight: 1.6 }}>
               {lang === 'en' ? 'How was your experience with QuickPassportPhoto?' : 'QuickPassportPhoto ke saath aapka anubhav kaisa raha?'}
             </p>
             
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginBottom: 32 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 32 }}>
               {[1, 2, 3, 4, 5].map(star => (
                 <button 
                   key={star} 
-                  onClick={() => { setRating(star); setRated(true); setTimeout(() => setShowRating(false), 1000); }} 
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', transition: '0.2s', transform: rating >= star ? 'scale(1.2)' : 'scale(1)' }}
+                  onMouseEnter={() => !rated && setRating(star)}
+                  onMouseLeave={() => !rated && setRating(0)}
+                  onClick={() => { setRating(star); setRated(true); setTimeout(() => setShowRating(false), 1200); }} 
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', transition: '0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)', transform: rating >= star ? 'scale(1.2)' : 'scale(1)' }}
                 >
-                  <Zap size={32} color={rating >= star ? '#673AB7' : '#e2e8f0'} fill={rating >= star ? '#673AB7' : 'none'} />
+                  <Zap size={40} color={rating >= star ? '#673AB7' : '#cbd5e1'} fill={rating >= star ? '#673AB7' : 'none'} />
                 </button>
               ))}
             </div>
 
-            {rated && <div className="animate-in fade-in slide-in-from-bottom-2" style={{ color: '#10b981', fontWeight: 700, fontSize: 14 }}>{lang === 'en' ? 'Thanks for the feedback!' : 'Feedback ke liye dhanyawad!'}</div>}
+            {rated && <div className="animate-in fade-in slide-in-from-bottom-2" style={{ color: '#10b981', fontWeight: 800, fontSize: 15 }}>{lang === 'en' ? 'Thank you! Pushing to GitHub...' : 'Dhanyawad! GitHub par update ho raha hai...'}</div>}
           </div>
         </div>
       )}
