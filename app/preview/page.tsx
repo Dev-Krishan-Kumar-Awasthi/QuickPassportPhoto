@@ -241,7 +241,56 @@ export default function PreviewPage() {
   const [customCountInput, setCustomCountInput] = useState('5');
   const [selectedCount, setSelectedCount] = useState<number | ''>(8);
   const compositingRef = useRef(false);
+  
+  // Interactive Cropping States
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [visualOffsetX, setVisualOffsetX] = useState(0); // For instant CSS feedback
+  const [visualOffsetY, setVisualOffsetY] = useState(0);
+  const [visualScale, setVisualScale] = useState(1.0);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  // Sync visual state with actual state on mount
   useEffect(() => {
+    setVisualOffsetX(offsetX);
+    setVisualOffsetY(offsetY);
+    setVisualScale(scale);
+  }, [offsetX, offsetY, scale]);
+
+  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsDragging(true);
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setDragStart({ x: clientX - visualOffsetX, y: clientY - visualOffsetY });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setVisualOffsetX(clientX - dragStart.x);
+    setVisualOffsetY(clientY - dragStart.y);
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    // Finally sync the "true" state to trigger the composite/grid update
+    setOffsetX(visualOffsetX);
+    setOffsetY(visualOffsetY);
+    setScale(visualScale);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+    const newScale = Math.max(0.3, Math.min(3.0, visualScale + delta));
+    setVisualScale(newScale);
+    setScale(newScale); // Sync for immediate grid update
+  };
+
+  useEffect(() => {
+    // Master language change and initial load
     const handleLangChange = () => {
       const savedLang = localStorage.getItem('app_lang') as Language;
       if (savedLang) setLang(savedLang);
@@ -375,8 +424,55 @@ export default function PreviewPage() {
             {/* Left Panel: Preview only */}
             <div className="card" style={{ padding: 24, position: 'relative' }}>
               <h3 style={{ fontWeight: 700, fontSize: 13, color: '#475569', marginBottom: 16, textTransform: 'uppercase' }}>{lang === 'en' ? 'Photo Preview' : 'Photo Preview'}</h3>
-              <div style={{ borderRadius: 12, overflow: 'hidden', background: selectedBgData.hex, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400, boxShadow: 'inset 0 0 40px rgba(0,0,0,0.05)' }}>
-                {loading ? <Loader2 size={28} className="animate-spin" color="#673AB7" /> : <img src={compositedPNGs[0]} alt="Processed" style={{ width: 220, height: 'auto', boxShadow: '0 8px 30px rgba(0,0,0,0.15)' }} />}
+              <div 
+                ref={previewContainerRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleMouseDown}
+                onTouchMove={handleMouseMove}
+                onTouchEnd={handleMouseUp}
+                onWheel={handleWheel}
+                style={{ 
+                  borderRadius: 12, 
+                  overflow: 'hidden', 
+                  background: selectedBgData.hex, 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  minHeight: 400, 
+                  boxShadow: 'inset 0 0 40px rgba(0,0,0,0.05)',
+                  cursor: isDragging ? 'grabbing' : 'grab',
+                  position: 'relative',
+                  touchAction: 'none'
+                }}
+              >
+                {loading && (
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
+                    <Loader2 size={28} className="animate-spin" color="#673AB7" />
+                  </div>
+                )}
+                
+                {/* Visual Hint */}
+                <div style={{ position: 'absolute', top: 12, right: 12, padding: '6px 10px', background: 'rgba(0,0,0,0.4)', color: 'white', borderRadius: 20, fontSize: 10, fontWeight: 700, pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 6, zIndex: 5 }}>
+                  <Move size={12} /> {lang === 'en' ? 'Drag to position • Scroll to zoom' : 'Drag karke sahi karein • Zoom karein'}
+                </div>
+
+                <img 
+                  src={processedPNGs[0]} // Use the RAW PNG for better dragging performance
+                  alt="Processed" 
+                  style={{ 
+                    width: 220, 
+                    height: 'auto', 
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                    userSelect: 'none',
+                    pointerEvents: 'none',
+                    transform: `translate(${visualOffsetX}px, ${visualOffsetY}px) scale(${visualScale})`,
+                    transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+                    filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) sepia(${sepia}%)`
+                  }} 
+                />
               </div>
             </div>
 

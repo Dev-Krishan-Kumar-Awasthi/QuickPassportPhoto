@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, AlertCircle } from 'lucide-react';
+import { Zap, AlertCircle, CheckCircle } from 'lucide-react';
 import Navbar from '../_components/Navbar';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getBiometricCrop } from '../../lib/utils/faceCrop';
 
 const STEPS = [
@@ -15,6 +16,15 @@ const STEPS = [
   { label: 'Generating print-ready layout...', icon: '🖨️', key: 'layout' },
 ];
 
+const TIPS = [
+  "Did you know? Our AI detects up to 68 facial landmarks for perfect alignment.",
+  "Tip: Natural lighting always gives the best passport photo results.",
+  "First run? The AI model is being downloaded to your browser for total privacy.",
+  "Pro Tip: Keep a neutral expression and look directly at the camera.",
+  "Our AI automatically scales your photo to 3.5x4.5cm Indian standards.",
+  "Working hard... Your photo is staying 100% on your device during this step."
+];
+
 export default function ProcessingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
@@ -22,7 +32,16 @@ export default function ProcessingPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState('Initializing...');
+  const [tipIndex, setTipIndex] = useState(0);
   const hasRun = useRef(false);
+
+  // Auto-rotate tips every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTipIndex((prev) => (prev + 1) % TIPS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (hasRun.current) return;
@@ -189,36 +208,62 @@ export default function ProcessingPage() {
         ) : (
           <>
             {/* Progress bar */}
-            <div style={{ marginBottom: 32 }}>
+            <div style={{ marginBottom: 40 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span style={{ color: '#475569', fontSize: 15, fontWeight: 600 }}>Processing...</span>
-                <span style={{ color: '#673AB7', fontSize: 15, fontWeight: 700 }}>{progress}%</span>
+                <span style={{ color: '#475569', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Processing...</span>
+                <span style={{ color: '#673AB7', fontSize: 13, fontWeight: 800 }}>{progress}%</span>
               </div>
-              <div style={{ height: 8, background: 'rgba(103, 58, 183, 0.1)', borderRadius: 100, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${progress}%`, background: 'linear-gradient(90deg, #673AB7, #9B59B6)', borderRadius: 100, transition: 'width 0.4s ease', boxShadow: '0 0 10px rgba(103, 58, 183, 0.3)' }} />
+              <div style={{ height: 10, background: 'rgba(103, 58, 183, 0.1)', borderRadius: 100, overflow: 'hidden', padding: 2 }}>
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  style={{ height: '100%', background: 'linear-gradient(90deg, #673AB7, #9B59B6)', borderRadius: 100, boxShadow: '0 0 15px rgba(103, 58, 183, 0.4)' }} 
+                />
               </div>
             </div>
 
-            {/* Steps */}
-            <div className="card" style={{ padding: '20px 24px', marginBottom: 24 }}>
-              {STEPS.map((step, i) => (
-                <div key={step.key} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', borderBottom: i < STEPS.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none', opacity: i <= currentStep ? 1 : 0.4, transition: 'opacity 0.4s ease' }}>
-                  <span style={{ fontSize: 18, minWidth: 24 }}>{step.icon}</span>
-                  <span style={{ color: i < currentStep ? '#10b981' : i === currentStep ? '#1e293b' : '#64748b', fontSize: 15, flex: 1, textAlign: 'left', transition: 'color 0.3s', fontWeight: i === currentStep ? 700 : 500 }}>
-                    {step.label}
-                  </span>
-                  {i < currentStep && <span style={{ color: '#10b981', fontSize: 14 }}>✓</span>}
-                  {i === currentStep && (
-                    <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid #673AB7', borderTopColor: 'transparent', animation: 'spin-slow 0.7s linear infinite', flexShrink: 0 }} />
-                  )}
-                </div>
-              ))}
+            {/* Steps and Tips combined */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 24 }}>
+              <div className="card" style={{ padding: '16px 24px' }}>
+                {STEPS.map((step, i) => (
+                  <div key={step.key} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 0', borderBottom: i < STEPS.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none', opacity: i <= currentStep ? 1 : 0.3, transition: 'all 0.4s ease' }}>
+                    <span style={{ fontSize: 18, minWidth: 24 }}>{step.icon}</span>
+                    <span style={{ color: i < currentStep ? '#10b981' : i === currentStep ? '#1e293b' : '#64748b', fontSize: 14, flex: 1, textAlign: 'left', transition: 'color 0.3s', fontWeight: i === currentStep ? 700 : 500 }}>
+                      {step.label}
+                    </span>
+                    {i < currentStep && <CheckCircle size={14} color="#10b981" />}
+                    {i === currentStep && (
+                      <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #673AB7', borderTopColor: 'transparent', animation: 'spin-slow 0.8s linear infinite' }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Tips Carousel */}
+              <div className="card" style={{ padding: '20px 24px', background: 'rgba(103, 58, 183, 0.03)', border: '1px dashed rgba(103, 58, 183, 0.2)', minHeight: 100, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={tipIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.5 }}
+                    style={{ textAlign: 'left' }}
+                  >
+                    <p style={{ color: '#673AB7', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', marginBottom: 8, letterSpacing: '1px' }}>AI Insights</p>
+                    <p style={{ color: '#475569', fontSize: 14, fontWeight: 500, lineHeight: 1.5 }}>{TIPS[tipIndex]}</p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
 
             {/* Note */}
-            <p style={{ color: '#64748b', fontSize: 13, fontWeight: 500 }}>
-              ⏳ First run downloads the AI model (~40MB). Subsequent runs are instant.
-            </p>
+            <div style={{ marginTop: 24, padding: 12, background: 'rgba(245, 158, 11, 0.05)', borderRadius: 12, border: '1px solid rgba(245, 158, 11, 0.1)' }}>
+              <p style={{ color: '#d97706', fontSize: 12, fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                ⏳ {window.localStorage.getItem('ai_model_loaded') ? 'Re-using cached AI model...' : 'First run downloads AI models (~40MB).'}
+              </p>
+            </div>
           </>
         )}
 
