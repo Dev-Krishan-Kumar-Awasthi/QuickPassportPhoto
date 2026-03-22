@@ -70,7 +70,10 @@ export const metadata: Metadata = {
     },
   },
   category: "Photography",
-  manifest: "/manifest.json"
+  manifest: "/manifest.json",
+  verification: {
+    google: "ADD_YOUR_GOOGLE_VERIFICATION_CODE_HERE",
+  },
 };
 
 export const viewport = {
