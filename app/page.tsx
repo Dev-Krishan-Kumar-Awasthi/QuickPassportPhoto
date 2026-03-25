@@ -138,11 +138,11 @@ export default function LandingPage() {
       <section style={{ padding: '80px 24px', background: '#fff', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9', position: 'relative', zIndex: 1 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div className="scroll-animate" style={{ textAlign: 'center', marginBottom: 60 }}>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, color: '#1e293b', marginBottom: 16 }}>
-              The Best AI <span className="text-gradient-purple-pink">Passport Photo Maker</span> Studio
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 800, color: '#1e293b', marginBottom: 16 }}>
+              The Best AI <span className="text-gradient-purple-pink">Passport Photo Maker</span> Online
             </h2>
             <p style={{ color: '#64748b', fontSize: 18, maxWidth: 600, margin: '0 auto' }}>
-              We've automated the most complex studio tasks so you can get perfect results in seconds.
+              Create official passport, visa, and ID photos instantly. Our AI handles background removal, biometric cropping, and print-ready layouts for you.
             </p>
           </div>
 
@@ -222,6 +222,37 @@ export default function LandingPage() {
                </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Supported Photo Formats - SEO SECTION */}
+      <section style={{ padding: '80px 24px', background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+           <div className="scroll-animate" style={{ textAlign: 'center', marginBottom: 48 }}>
+             <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 36px)', fontWeight: 800, color: '#1e293b', marginBottom: 12 }}>
+               Supported <span className="text-gradient-purple-pink">Photo Standards</span>
+             </h2>
+             <p style={{ color: '#64748b', fontSize: 16 }}>Our AI is trained on official requirements for 100+ countries.</p>
+           </div>
+           
+           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+              {[
+                { country: "India", sizes: ["3.5x4.5cm Passport Size", "2x2 inch Visa", "UPSC/SSC with Name & Date"] },
+                { country: "United States", sizes: ["2x2 inch Passport", "US Visa Photo (Digital)", "Green Card Photo"] },
+                { country: "Global Standards", sizes: ["Schengen Visa", "UK/EU Passport (35x45mm)", "Blue/White Backgrounds"] }
+              ].map((item, idx) => (
+                <div key={idx} className="info-card scroll-animate" style={{ padding: 24, background: '#fff' }}>
+                  <h4 style={{ fontWeight: 800, color: '#673AB7', marginBottom: 12, fontSize: 16 }}>{item.country}</h4>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {item.sizes.map(s => (
+                      <li key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: '#475569' }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#9B59B6' }} /> {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+           </div>
         </div>
       </section>
 

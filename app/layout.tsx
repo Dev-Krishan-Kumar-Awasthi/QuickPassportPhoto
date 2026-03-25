@@ -13,20 +13,20 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL('https://quick-passport-photo.vercel.app'),
   title: {
-    default: "QuickPassportPhoto | Best AI Passport Photo Maker by Krishan Kumar Awasthi",
-    template: "%s | QuickPassportPhoto KKA"
+    default: "Quick Passport Photo Maker Online | Best AI Passport Size Photo Generator",
+    template: "%s | QuickPassportPhoto"
   },
-  description: "Create official passport & ID photos in 15 seconds. Top-rated AI photo studio tool by Krishan Kumar Awasthi (KKA). Perfect for UPSC, SSC, Visa, and Exam cards with automated background removal and biometric cropping.",
+  description: "Create official passport & ID photos in 15 seconds. High-quality AI passport photo maker with automated background removal & biometric cropping. Perfect for UPSC, SSC, Visa, and Indian ID cards.",
   keywords: [
-    "passport photo maker", "online passport photo", "passport size photo online", 
-    "automatic background remover", "biometric photo maker", "visa photo maker",
-    "upsc photo generator", "ssc photo with date maker", "exam photo editor",
-    "krishan kumar awasthi", "kka shivpuri", "kka developer", "kka photo tool",
-    "id photo maker free", "passport photo print sheet", "4x6 photo sheet maker",
-    "passport photo maker india", "best passport photo tool", "ai background removal"
+    "quick passport photo", "passport photo maker online", "online passport size photo", 
+    "ai passport photo generator", "passport size photo with date", "upsc photo maker",
+    "ssc photo with date online", "visa photo maker", "biometric photo maker",
+    "free passport photo maker", "passport photo background remover", "id photo maker",
+    "passport photo maker india", "3.5x4.5 cm photo maker", "4x6 photo sheet maker",
+    "krishan kumar awasthi", "kka photo tool", "passport photo editor free"
   ].join(", "),
   authors: [{ name: "Krishan Kumar Awasthi", url: "https://kkawasthi.vercel.app/" }],
-  creator: "Krishan Kumar Awasthi (KKA)",
+  creator: "Krishan Kumar Awasthi",
   publisher: "QuickPassportPhoto",
   formatDetection: {
     email: false,
@@ -37,16 +37,16 @@ export const metadata: Metadata = {
     canonical: 'https://quick-passport-photo.vercel.app',
   },
   openGraph: {
-    title: "QuickPassportPhoto by Krishan Kumar Awasthi | Shivpuri",
-    description: "Get print-ready passport photos instantly. Created by KKA in Shivpuri. 100% automated background removal and cropping.",
-    url: "https://quickpassportphoto.com",
-    siteName: "QuickPassportPhoto Shivpuri",
+    title: "Quick Passport Photo Maker Online | AI Powered ID Studio",
+    description: "Get print-ready passport photos instantly with AI. 100% automated background removal and cropping for UPSC, SSC, and Visa.",
+    url: "https://quick-passport-photo.vercel.app",
+    siteName: "QuickPassportPhoto",
     images: [
       {
         url: "/Logo.png",
         width: 800,
         height: 600,
-        alt: "QuickPassportPhoto by Krishan Kumar Awasthi (KKA)"
+        alt: "Quick Passport Photo Maker Website"
       }
     ],
     locale: "en_IN",
@@ -54,8 +54,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "QuickPassportPhoto | Krishan Kumar Awasthi | Shivpuri",
-    description: "Instant passport photo maker in Shivpuri by KKA. Zero editing skills needed.",
+    title: "Quick Passport Photo Maker | AI ID Photo Generator",
+    description: "Create official passport & ID photos in 15 seconds. No editing skills required.",
     images: ["/Logo.png"],
   },
   robots: {
