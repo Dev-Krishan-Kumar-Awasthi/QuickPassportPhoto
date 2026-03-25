@@ -86,7 +86,7 @@ export default function Navbar() {
 
         {/* CTA */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Link href="/upload" className="btn-primary" style={{ padding: '10px 20px', fontSize: 14 }}>
+          <Link href="/upload?fresh=1" className="btn-primary" style={{ padding: '10px 20px', fontSize: 14 }}>
             <Zap size={15} />
             {t.tryFree}
           </Link>
@@ -118,7 +118,7 @@ export default function Navbar() {
             How it works
           </button>
           <Link href="/#pricing" onClick={() => setMenuOpen(false)} style={{ color: '#fff', fontSize: 16, textDecoration: 'none', fontWeight: 500 }}>Pricing</Link>
-          <Link href="/upload" onClick={() => setMenuOpen(false)} style={{
+          <Link href="/upload?fresh=1" onClick={() => setMenuOpen(false)} style={{
             background: '#ffffff', color: '#673AB7', padding: '12px', borderRadius: 8, textAlign: 'center', fontWeight: 700, textDecoration: 'none', marginTop: 10
           }}>
             Get Started Free

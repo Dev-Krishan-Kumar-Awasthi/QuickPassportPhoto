@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { ChevronLeft, Download, RefreshCw, Check, Layers, Zap, Loader2, Sun, Contrast, Wand2, Maximize2, Move, RotateCcw, Palette, Sliders, Type } from 'lucide-react';
 import Navbar from '../_components/Navbar';
 import { translations, Language } from '../../lib/translations';
-
+import { checkCompliance, ComplianceResult } from '../../lib/utils/complianceCheck';
+import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 const BG_COLORS = {
   classical: [
@@ -240,8 +242,9 @@ export default function PreviewPage() {
   const [isCustomCount, setIsCustomCount] = useState(false);
   const [customCountInput, setCustomCountInput] = useState('5');
   const [selectedCount, setSelectedCount] = useState<number | ''>(8);
+  const [compliance, setCompliance] = useState<ComplianceResult | null>(null);
+  const [faceDetected, setFaceDetected] = useState<boolean | null>(null);
   const compositingRef = useRef(false);
-  
   // Interactive Cropping States
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -250,7 +253,12 @@ export default function PreviewPage() {
   const [visualScale, setVisualScale] = useState(1.0);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
-  // Sync visual state with actual state on mount
+  // Manual Crop States
+  const [isCropping, setIsCropping] = useState(false);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [originalUpload, setOriginalUpload] = useState<string | null>(null);
   useEffect(() => {
     setVisualOffsetX(offsetX);
     setVisualOffsetY(offsetY);
@@ -314,6 +322,12 @@ export default function PreviewPage() {
     }
     setProcessedPNGs(newList);
 
+    // Show face detection result from processing page
+    const fd = sessionStorage.getItem('face_detected');
+    if (fd !== null) setFaceDetected(fd === 'true');
+
+    // Run compliance check on first processed image
+    checkCompliance(newList[0]).then(result => setCompliance(result));
 
     return () => window.removeEventListener('languageChange', handleLangChange);
   }, [router]);
@@ -329,7 +343,7 @@ export default function PreviewPage() {
         compositeImage(png, bgHex, b, c, s, x, y, r, sat, sep, brd, rad, sm, gd, showTxt, uName, uDate)
       ));
       setCompositedPNGs(comps);
-      
+
       const grid = await buildMultiGrid(comps, count);
       setGridImage(grid);
     } finally {
@@ -338,13 +352,66 @@ export default function PreviewPage() {
     }
   }, []);
 
-  useEffect(() => {
+  const updateGlobalState = useCallback(async () => {
     if (processedPNGs.length === 0) return;
     const allBgs = [...BG_COLORS.classical, ...BG_COLORS.stylish];
     const bgHex = allBgs.find(b => b.id === selectedBg)?.hex ?? '#ffffff';
     const count = Number(selectedCount) || 1;
-    compositeAll(processedPNGs, bgHex, count, brightness, contrast, scale, offsetX, offsetY, rotation, saturation, sepia, useBorder, borderRadius, smoothness, showGuides, showNameOverlay, userName, userDate);
+    // Generate new images, ensuring no infinite recursion loops
+    await compositeAll(processedPNGs, bgHex, count, brightness, contrast, scale, offsetX, offsetY, rotation, saturation, sepia, useBorder, borderRadius, smoothness, showGuides, showNameOverlay, userName, userDate);
   }, [processedPNGs, selectedBg, selectedCount, brightness, contrast, scale, offsetX, offsetY, rotation, saturation, sepia, useBorder, borderRadius, smoothness, showGuides, showNameOverlay, userName, userDate, compositeAll]);
+
+  useEffect(() => {
+    updateGlobalState();
+  }, [updateGlobalState]);
+
+  // Handle Manual Crop save
+  const handleSaveCrop = async () => {
+    if (!completedCrop || !imgRef.current) return;
+
+    try {
+      const canvas = document.createElement('canvas');
+      const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
+      const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) return;
+
+      const pixelRatio = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(completedCrop.width * scaleX * pixelRatio);
+      canvas.height = Math.floor(completedCrop.height * scaleY * pixelRatio);
+
+      ctx.scale(pixelRatio, pixelRatio);
+      ctx.imageSmoothingQuality = 'high';
+
+      const cropX = completedCrop.x * scaleX;
+      const cropY = completedCrop.y * scaleY;
+      const cropWidth = completedCrop.width * scaleX;
+      const cropHeight = completedCrop.height * scaleY;
+
+      ctx.drawImage(
+        imgRef.current,
+        cropX, cropY, cropWidth, cropHeight,
+        0, 0, cropWidth, cropHeight
+      );
+
+      const croppedBase64 = canvas.toDataURL('image/png');
+
+      // Update the processed PNG to be the newly cropped one
+      setProcessedPNGs([croppedBase64]);
+
+      // Re-run compliance check on the new cropped image
+      const result = await checkCompliance(croppedBase64);
+      setCompliance(result);
+
+      setIsCropping(false);
+    } catch (error) {
+      console.error('Failed to crop image', error);
+      alert('Failed to crop image. Please try again.');
+    }
+  };
+
+  if (!t) return null;
 
   const handleReset = () => {
     setBrightness(100);
@@ -398,7 +465,7 @@ export default function PreviewPage() {
           </Link>
 
           <div style={{ display: 'flex', gap: 12 }}>
-            <button 
+            <button
               onClick={() => router.push('/upload')}
               style={{ padding: '10px 20px', background: 'rgba(103, 58, 183, 0.1)', color: '#673AB7', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
             >
@@ -423,7 +490,35 @@ export default function PreviewPage() {
           <div>
             {/* Left Panel: Preview only */}
             <div className="card" style={{ padding: 24, position: 'relative' }}>
-              <h3 style={{ fontWeight: 700, fontSize: 13, color: '#475569', marginBottom: 16, textTransform: 'uppercase' }}>{lang === 'en' ? 'Photo Preview' : 'Photo Preview'}</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h3 style={{ fontWeight: 700, fontSize: 13, color: '#475569', textTransform: 'uppercase', margin: 0 }}>{lang === 'en' ? 'Photo Preview' : 'Photo Preview'}</h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button
+                    onClick={() => {
+                        setOriginalUpload(sessionStorage.getItem('upload_dataurl') || processedPNGs[0]);
+                        setCrop(undefined);
+                        setCompletedCrop(null);
+                        setIsCropping(true);
+                    }}
+                    style={{
+                      background: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', border: '1px solid rgba(59, 130, 246, 0.2)',
+                      padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4
+                    }}
+                  >
+                    <Maximize2 size={12} /> {lang === 'en' ? 'Crop Manually' : 'Manual Crop'}
+                  </button>
+                  {faceDetected !== null && (
+                    <span style={{
+                      fontSize: 11, fontWeight: 800, padding: '4px 10px', borderRadius: 20,
+                      background: faceDetected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                      color: faceDetected ? '#059669' : '#d97706',
+                      border: `1px solid ${faceDetected ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}`,
+                    }}>
+                      {faceDetected ? '✓ Auto-Cropped' : '⚠ Action Needed'}
+                    </span>
+                  )}
+                </div>
+              </div>
               <div 
                 ref={previewContainerRef}
                 onMouseDown={handleMouseDown}
@@ -474,6 +569,41 @@ export default function PreviewPage() {
                   }} 
                 />
               </div>
+
+              {/* Compliance Badge */}
+              {compliance && !loading && (
+                <div style={{
+                  marginTop: 16, padding: '14px 16px', borderRadius: 12,
+                  background: compliance.passed ? 'rgba(16, 185, 129, 0.06)' : 'rgba(245, 158, 11, 0.07)',
+                  border: `1.5px solid ${compliance.passed ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.3)'}`,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: compliance.issues.length > 0 ? 10 : 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 16 }}>{compliance.passed ? '✅' : '⚠️'}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: compliance.passed ? '#059669' : '#d97706' }}>
+                        {compliance.passed
+                          ? (lang === 'en' ? 'Compliance Check Passed' : 'Photo sahi hai')
+                          : (lang === 'en' ? 'Minor Issues Detected' : 'Kuch sahi nahi hai')}
+                      </span>
+                    </div>
+                    <span style={{
+                      fontSize: 12, fontWeight: 900, padding: '2px 10px', borderRadius: 20,
+                      background: compliance.score >= 80 ? '#059669' : compliance.score >= 60 ? '#d97706' : '#dc2626',
+                      color: 'white'
+                    }}>{compliance.score}/100</span>
+                  </div>
+                  {compliance.issues.length > 0 && (
+                    <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {compliance.issues.map((issue, i) => (
+                        <li key={i} style={{ fontSize: 12, color: '#92400e', fontWeight: 600 }}>
+                          • {issue}
+                          {compliance.tips[i] && <span style={{ color: '#64748b', fontWeight: 500 }}> — {compliance.tips[i]}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="card" style={{ padding: 24 }}>
@@ -800,6 +930,54 @@ export default function PreviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Manual Crop Modal */}
+      {isCropping && originalUpload && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24
+        }}>
+          <div className="card" style={{ maxWidth: 800, width: '100%', padding: '32px', display: 'flex', flexDirection: 'column', gap: 24, maxHeight: '90vh' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ fontSize: 24, fontWeight: 800, color: '#1e293b' }}>{lang === 'en' ? 'Crop Photo Manually' : 'Photo Crop Karein'}</h2>
+                <p style={{ color: '#64748b', fontSize: 14 }}>{lang === 'en' ? 'Drag to select your face and upper shoulders. Ratio is locked to passport standard (3.5x4.5).' : 'Pura chehra aur kandhe select karein.'}</p>
+              </div>
+              <button onClick={() => setIsCropping(false)} style={{ background: '#f1f5f9', border: 'none', padding: 8, borderRadius: '50%', cursor: 'pointer', color: '#64748b' }}>
+                <ChevronLeft size={20} />
+              </button>
+            </div>
+
+            <div style={{ flex: 1, minHeight: 0, background: '#f8fafc', borderRadius: 12, overflow: 'auto', display: 'flex', justifyContent: 'center', border: '1px solid #e2e8f0' }}>
+               <ReactCrop
+                 crop={crop}
+                 onChange={(_, percentCrop) => setCrop(percentCrop)}
+                 onComplete={(c) => setCompletedCrop(c)}
+                 aspect={3.5 / 4.5}
+                 style={{ maxHeight: '60vh' }}
+               >
+                 <img
+                   ref={imgRef}
+                   src={originalUpload}
+                   alt="Crop"
+                   style={{ maxHeight: '60vh', width: 'auto', objectFit: 'contain' }}
+                 />
+               </ReactCrop>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+               <button onClick={() => setIsCropping(false)} style={{ padding: '12px 24px', borderRadius: 8, background: '#f1f5f9', color: '#475569', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+                 Cancel
+               </button>
+               <button onClick={handleSaveCrop} disabled={!completedCrop || completedCrop.width === 0} className="btn-primary" style={{ padding: '12px 24px', borderRadius: 8, fontSize: 15 }}>
+                  <Check size={18} /> {lang === 'en' ? 'Apply Crop' : 'Crop Save Karein'}
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }

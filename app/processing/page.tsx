@@ -6,14 +6,15 @@ import { Zap, AlertCircle, CheckCircle } from 'lucide-react';
 import Navbar from '../_components/Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getBiometricCrop } from '../../lib/utils/faceCrop';
+import { autoEnhanceImage } from '../../lib/utils/imageEnhancer';
 
 const STEPS = [
-  { label: 'Loading AI model...', icon: '🧠', key: 'model' },
-  { label: 'Detecting face & landmarks...', icon: '🔍', key: 'detect' },
-  { label: 'Removing background with AI...', icon: '✂️', key: 'remove' },
-  { label: 'Biometric cropping & alignment...', icon: '📐', key: 'crop' },
-  { label: 'Enhancing lighting & sharpness...', icon: '✨', key: 'enhance' },
-  { label: 'Generating print-ready layout...', icon: '🖨️', key: 'layout' },
+  { label: 'Initializing AI engine...', icon: '🚀', key: 'init' },
+  { label: 'Detecting biometric features...', icon: '🔍', key: 'detect' },
+  { label: 'Isolating portrait subject...', icon: '👤', key: 'remove' },
+  { label: 'Applying biometric crop...', icon: '📐', key: 'crop' },
+  { label: 'Optimizing image quality...', icon: '✨', key: 'enhance' },
+  { label: 'Finalizing print-ready layout...', icon: '🖨️', key: 'layout' },
 ];
 
 const TIPS = [
@@ -60,29 +61,44 @@ export default function ProcessingPage() {
 
   const setStepProgress = (step: number, prog: number, msg: string) => {
     setCurrentStep(step);
-    setProgress(prog);
+    // Smooth progress transition
+    setProgress(prev => Math.max(prev, prog));
     setStatusMsg(msg);
   };
 
   const runProcessing = async (dataUrl: string) => {
     try {
-      // Step 0: Load models
-      setStepProgress(0, 5, 'Loading AI biometric models...');
-      // Load face-api models via CDN (cached)
+      // Step 0: Load models & validate image
+      setStepProgress(0, 5, 'Initializing AI engine...');
+      
+      // Enhance Image Quality First
+      setStepProgress(0, 10, 'Enhancing image quality (Color & Sharpness)...');
+      const enhancedUrl = await autoEnhanceImage(dataUrl);
+      
       const img = new Image();
-      img.src = dataUrl;
+      img.src = enhancedUrl;
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = () => reject(new Error('Invalid image data'));
       });
 
-      // Step 1: Detect & Crop
-      setStepProgress(1, 20, 'Analyzing biometric facial features...');
+      // Detect if this is a full-photo (much larger than passport aspect ratio)
+      const aspectRatio = img.width / img.height;
+      const isFullPhoto = aspectRatio > 0.9 || img.width > 600 || img.height > 800;
+      if (isFullPhoto) {
+        setStepProgress(0, 15, 'Full photo detected — auto-cropping to passport size...');
+      } else {
+        setStepProgress(0, 15, 'Photo enhanced — analyzing face...');
+      }
+      await delay(200);
+
+      // Step 1: Detect & Biometric Crop (works for both full-body and passport photos)
+      setStepProgress(1, 22, 'Scanning for face and biometric landmarks...');
       const cropData = await getBiometricCrop(img);
       
       let processedBase;
       if (cropData) {
-        // Create the cropped canvas first so we send less data to the BG removal API
+        // Crop the image to passport dimensions
         const canvas = document.createElement('canvas');
         canvas.width = cropData.targetWidth;
         canvas.height = cropData.targetHeight;
@@ -90,16 +106,18 @@ export default function ProcessingPage() {
         ctx.drawImage(img, cropData.x, cropData.y, cropData.width, cropData.height, 0, 0, targetW, targetH);
         processedBase = canvas.toDataURL('image/png');
         
-        // Save landmarks for auto-fitting outfits
+        // Save landmarks and crop metadata
+        sessionStorage.setItem('face_detected', 'true');
         if (cropData.landmarks) {
           sessionStorage.setItem('face_landmarks', JSON.stringify(cropData.landmarks));
           sessionStorage.setItem('crop_box', JSON.stringify({ x: cropData.x, y: cropData.y, width: cropData.width, height: cropData.height }));
         }
-
-        setStepProgress(1, 35, 'Face detected and aligned!');
+        setStepProgress(1, 38, '✓ Face detected & passport crop applied!');
       } else {
-        processedBase = dataUrl;
-        setStepProgress(1, 35, 'No face detected, using original framing...');
+        // No face found — use original but resize to passport aspect ratio (user can adjust on preview)
+        processedBase = enhancedUrl;
+        sessionStorage.setItem('face_detected', 'false');
+        setStepProgress(1, 38, 'No face found — will use full image (adjust on preview page)');
       }
 
       // Step 2: Remove background (Default: Free Local AI)
@@ -115,18 +133,29 @@ export default function ProcessingPage() {
         }
 
         const blob = await (await fetch(processedBase)).blob();
+        
+        // Start a "smart" progress for the opaque removal process
+        const interval = setInterval(() => {
+          setProgress(prev => {
+            if (prev < 70) return prev + 0.5;
+            return prev;
+          });
+        }, 200);
+
         const resultBlob = await removeBackground(blob, {
-          progress: (p: any) => {
-            // Optional: update progress based on model loading
-            if (typeof p === 'number' && p < 1) {
-              setStepProgress(2, 45 + Math.floor(p * 10), 'Loading AI Model...');
+          progress: (type: string, p: number) => {
+            if (type === 'fetch') {
+              setStepProgress(2, 45 + Math.floor(p * 15), 'Downloading AI Model (One-time)...');
+            } else if (type === 'compute') {
+              setStepProgress(2, 60 + Math.floor(p * 15), 'Processing image pixels...');
             }
           }
         });
         
+        clearInterval(interval);
         processedBase = await blobToDataUrl(resultBlob);
         window.localStorage.setItem('ai_model_loaded', 'true');
-        setStepProgress(2, 75, 'Background removed perfectly!');
+        setStepProgress(2, 80, 'Subject isolated successfully!');
 
       } catch (e) {
         console.warn('Local AI failed, trying Cloud Backup...', e);
@@ -148,18 +177,14 @@ export default function ProcessingPage() {
       }
       
       // Step 3: Enhancement and finalization
-      setStepProgress(3, 85, 'Enhancing image quality...');
+      setStepProgress(3, 85, 'Finalizing image... 🪄');
       await delay(500);
 
-      // Step 4: Enhance
-      setStepProgress(4, 92, 'Enhancing quality...');
-      const enhancedUrl = await enhanceImage(processedBase);
-
-      // Step 5: Layout
-      setStepProgress(5, 97, 'Finalizing result...');
+      // Step 4: Layout
+      setStepProgress(4, 97, 'Ready to print!');
       await delay(400);
 
-      sessionStorage.setItem('processed_image', enhancedUrl);
+      sessionStorage.setItem('processed_image', processedBase);
       setProgress(100);
       setStatusMsg('Done! ✓');
 
@@ -302,24 +327,3 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 /** Global dimensions constant */
 const targetW = 413; // 35mm
 const targetH = 531; // 45mm
-
-/** Very slight brightness/contrast enhancement */
-async function enhanceImage(dataUrl: string): Promise<string> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0);
-
-      // Apply subtle brightness/contrast via CSS filter on canvas
-      ctx.filter = 'brightness(1.05) contrast(1.05)';
-      ctx.drawImage(img, 0, 0);
-
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.src = dataUrl;
-  });
-}

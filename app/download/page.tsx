@@ -69,6 +69,15 @@ export default function DownloadPage() {
     setTimeout(() => setShowRating(true), 2000);
   };
 
+  const handleDownloadJPEG = () => {
+    if (!data.composited) return;
+    const link = document.createElement('a');
+    link.href = data.composited;
+    link.download = 'passport-photo.jpg';
+    link.click();
+    setTimeout(() => setShowRating(true), 1000);
+  };
+
   return (
     <main style={{ minHeight: '100vh', padding: '100px 24px 60px', position: 'relative', zIndex: 1 }}>
       <Navbar />
@@ -89,7 +98,7 @@ export default function DownloadPage() {
               disabled={downloading}
               className="btn-primary"
               style={{ 
-                minWidth: 260, fontSize: 17, padding: '18px 32px', justifyContent: 'center',
+                minWidth: 220, fontSize: 17, padding: '18px 32px', justifyContent: 'center',
                 background: 'linear-gradient(135deg, #10b981, #059669)',
                 boxShadow: '0 10px 30px rgba(16, 185, 129, 0.4)',
                 borderRadius: 16
@@ -100,9 +109,24 @@ export default function DownloadPage() {
             </button>
 
             <button
+              onClick={handleDownloadJPEG}
+              disabled={!data.composited}
+              style={{ 
+                minWidth: 180, fontSize: 17, padding: '18px 28px', display: 'flex', alignItems: 'center', gap: 10,
+                background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: 'white', border: 'none',
+                borderRadius: 16, fontWeight: 700, cursor: 'pointer', transition: '0.2s', justifyContent: 'center',
+                boxShadow: '0 10px 30px rgba(59, 130, 246, 0.35)',
+                opacity: !data.composited ? 0.5 : 1
+              }}
+            >
+              <Download size={20} />
+              {lang === 'en' ? 'Save as JPEG' : 'JPEG Save karein'}
+            </button>
+
+            <button
               onClick={handlePrint}
               style={{ 
-                minWidth: 200, fontSize: 17, padding: '18px 32px', display: 'flex', alignItems: 'center', gap: 10,
+                minWidth: 180, fontSize: 17, padding: '18px 28px', display: 'flex', alignItems: 'center', gap: 10,
                 background: '#ffffff', color: '#10b981', border: '2px solid #10b981',
                 borderRadius: 16, fontWeight: 700, cursor: 'pointer', transition: '0.2s', justifyContent: 'center'
               }}
@@ -154,9 +178,14 @@ export default function DownloadPage() {
               </div>
             </div>
 
-            <button onClick={() => router.push('/')} style={{ fontSize: 15, padding: '16px', justifyContent: 'center', background: '#ffffff', border: '1px solid rgba(0,0,0,0.1)', color: '#334155', borderRadius: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Zap size={16} /> {lang === 'en' ? 'Create Another for Free' : 'Ek aur Muft banayein'}
-            </button>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <button onClick={() => router.push('/upload?fresh=1')} style={{ flex: 1, fontSize: 15, padding: '16px', justifyContent: 'center', background: '#f8fafc', border: '1px solid rgba(0,0,0,0.1)', color: '#334155', borderRadius: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Zap size={16} color="#673AB7" /> {lang === 'en' ? 'Create Another' : 'Ek aur banayein'}
+              </button>
+              <button onClick={() => router.push('/')} style={{ flex: 1, fontSize: 15, padding: '16px', justifyContent: 'center', background: '#fff', border: '1px solid rgba(0,0,0,0.1)', color: '#64748b', borderRadius: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                {lang === 'en' ? 'Go to Home' : 'Home par jayein'}
+              </button>
+            </div>
           </div>
         </div>
 
