@@ -401,6 +401,25 @@ export default function LandingPage() {
           </div>
 
           <div style={{ display: 'grid', gap: 32 }}>
+            {/* Popular Services Tag Cloud - SEO HEAVY */}
+            <div className="scroll-animate" style={{ marginTop: 80, textAlign: 'center' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: 24, letterSpacing: '1px' }}>Popular Photo Services</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 10, maxWidth: 1000, margin: '0 auto' }}>
+                {[
+                  "UPSC Photo with Date", "SSC Photo Resizer", "JEE Main AI Photo", "NEET Passport Photo", "Passport Size Photo 3.5x4.5",
+                  "2x2 Visa Photo", "US Visa DS-160", "Schengen Visa Maker", "White Background Remover", "Blue Background ID",
+                  "Indian Passport Size", "PAN Card Photo", "Aadhar Photo Update", "Driving License Maker", "Resume Headshot AI",
+                  "LinkedIn Profile Photo", "Student ID Maker", "School Photo Studio", "Biometric Photo Check", "Print Ready PDF",
+                  "4x6 Photo Sheet", "A4 Passport Layout", "DSLR Quality ID", "Infant Passport Photo", "Official ID Studio Online"
+                ].map(tag => (
+                  <span key={tag} style={{ 
+                    padding: '8px 16px', background: 'rgba(103, 58, 183, 0.05)', color: '#673AB7', 
+                    borderRadius: 100, fontSize: 13, fontWeight: 600, border: '1px solid rgba(103, 58, 183, 0.1)'
+                  }}>{tag}</span>
+                ))}
+              </div>
+            </div>
+
             {[
               { 
                 q: "How to make a passport size photo online for free?", 
