@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * SERVER-SIDE Background Removal API 
  * This route acts as a proxy to keep API keys hidden.
