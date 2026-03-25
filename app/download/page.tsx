@@ -21,7 +21,10 @@ export default function DownloadPage() {
     sheet: '4x6',
     count: '8',
     grid: '',
-    composited: ''
+    composited: '',
+    customW: '35',
+    customH: '45',
+    customDPI: '300'
   });
 
   useEffect(() => {
@@ -37,13 +40,25 @@ export default function DownloadPage() {
     const count = sessionStorage.getItem('preview_count');
     const grid = sessionStorage.getItem('grid_image');
     const composited = sessionStorage.getItem('composited_image');
+    const customW = sessionStorage.getItem('preview_custom_w') || '35';
+    const customH = sessionStorage.getItem('preview_custom_h') || '45';
+    const customDPI = sessionStorage.getItem('preview_custom_dpi') || '300';
 
     if (!grid || !composited) {
       router.replace('/preview');
       return;
     }
 
-    setData({ bg: bg || 'white', sheet: sheet || '4x6', count: count || '8', grid, composited });
+    setData({ 
+      bg: bg || 'white', 
+      sheet: sheet || '4x6', 
+      count: count || '8', 
+      grid, 
+      composited,
+      customW,
+      customH,
+      customDPI
+    });
     return () => window.removeEventListener('languageChange', handleLangChange);
   }, [router]);
 
@@ -52,10 +67,18 @@ export default function DownloadPage() {
   const handleDownloadPDF = async () => {
     setDownloading(true);
     try {
+      // Map sheet ID to physical size (mm)
+      let paperSize: [number, number] = [152.4, 101.6]; // 4x6
+      if (data.sheet === '5x7') paperSize = [177.8, 127];
+      if (data.sheet === 'a4') paperSize = [210, 297];
+
       await generatePDF({
         imageData: data.grid,
         backgroundColor: data.bg,
-        count: Number(data.count)
+        count: Number(data.count),
+        paperSize,
+        photoSize: [Number(data.customW), Number(data.customH)],
+        dpi: Number(data.customDPI)
       });
       setTimeout(() => setShowRating(true), 1500);
     } catch (err) {

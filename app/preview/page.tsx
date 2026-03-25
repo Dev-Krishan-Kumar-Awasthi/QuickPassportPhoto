@@ -53,7 +53,10 @@ async function compositeImage(
   gd: boolean,
   showTxt: boolean,
   uName: string,
-  uDate: string
+  uDate: string,
+  suitUrl: string | null,
+  suitScale: number,
+  useStudio: boolean
 ): Promise<string> {
   return new Promise((resolve) => {
     const img = new Image();
@@ -93,12 +96,25 @@ async function compositeImage(
         const smBlur = (sm / 100) * 0.4;
         const smContrast = 100 + (sm / 100) * 5;
         ctx.filter = `brightness(${b}%) contrast(${c * (smContrast / 100)}%) saturate(${sat}%) sepia(${sep}%) blur(${smBlur}px)`;
-      } else {
-        ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${sat}%) sepia(${sep}%)`;
+      ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${sat}%) sepia(${sep}%)`;
       }
       ctx.drawImage(img, -img.width / 2, -img.height / 2);
       ctx.restore();
 
+      // 2. Draw Suit (Magic Wardrobe)
+      if (suitUrl) {
+        ctx.save();
+        const suitImg = new Image();
+        await new Promise<void>((r) => { suitImg.onload = () => r(); suitImg.src = suitUrl; });
+        // Base width is 80% of canvas width
+        const drawWidth = canvas.width * 0.8 * suitScale;
+        const scaleRatio = drawWidth / suitImg.width;
+        const drawHeight = suitImg.height * scaleRatio;
+        // Draw at bottom center
+        ctx.translate(canvas.width / 2, canvas.height);
+        ctx.drawImage(suitImg, -drawWidth / 2, -drawHeight, drawWidth, drawHeight);
+        ctx.restore();
+      }
 
       // 3. Indian Standard Guides
       if (gd) {
@@ -134,6 +150,17 @@ async function compositeImage(
         } else {
           ctx.fillText((uName || uDate).toUpperCase(), canvas.width / 2, canvas.height - barH * 0.4);
         }
+        ctx.restore();
+      }
+
+      // 5. Studio Lighting Effect
+      if (useStudio) {
+        ctx.save();
+        const grad = ctx.createRadialGradient(canvas.width * 0.2, canvas.height * 0.2, 0, canvas.width * 0.5, canvas.height * 0.5, canvas.width);
+        grad.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
       }
 
@@ -236,16 +263,22 @@ export default function PreviewPage() {
   const [rotation, setRotation] = useState(0);
   const [smoothness, setSmoothness] = useState(0);
   const [showGuides, setShowGuides] = useState(false);
-  const [activeTab, setActiveTab] = useState<'colors' | 'edit'>('colors');
+  const [activeTab, setActiveTab] = useState<'colors' | 'edit' | 'wardrobe'>('colors');
   const [showNameOverlay, setShowNameOverlay] = useState(false);
   const [userName, setUserName] = useState('');
   const [userDate, setUserDate] = useState(new Date().toLocaleDateString('en-GB'));
+  const [selectedSuit, setSelectedSuit] = useState<string | null>(null);
+  const [suitScale, setSuitScale] = useState(1.0);
   const [lang, setLang] = useState<Language>('en');
   const [isCustomCount, setIsCustomCount] = useState(false);
   const [customCountInput, setCustomCountInput] = useState('5');
   const [selectedCount, setSelectedCount] = useState<number | ''>(8);
   const [compliance, setCompliance] = useState<ComplianceResult | null>(null);
   const [faceDetected, setFaceDetected] = useState<boolean | null>(null);
+  const [customWidth, setCustomWidth] = useState('35');
+  const [customHeight, setCustomHeight] = useState('45');
+  const [customDPI, setCustomDPI] = useState('300');
+  const [useStudioLight, setUseStudioLight] = useState(false);
   const compositingRef = useRef(false);
   // Interactive Cropping States
   const [isDragging, setIsDragging] = useState(false);
@@ -336,13 +369,13 @@ export default function PreviewPage() {
 
   const t = translations[lang];
 
-  const compositeAll = useCallback(async (pngs: string[], bgHex: string, count: number, b: number, c: number, s: number, x: number, y: number, r: number, sat: number, sep: number, brd: boolean, rad: number, sm: number, gd: boolean, showTxt: boolean, uName: string, uDate: string) => {
+  const compositeAll = useCallback(async (pngs: string[], bgHex: string, count: number, b: number, c: number, s: number, x: number, y: number, r: number, sat: number, sep: number, brd: boolean, rad: number, sm: number, gd: boolean, showTxt: boolean, uName: string, uDate: string, sUrl: string | null, sScale: number, uStudio: boolean) => {
     if (compositingRef.current || pngs.length === 0) return;
     compositingRef.current = true;
     setLoading(true);
     try {
       const comps = await Promise.all(pngs.map(png => 
-        compositeImage(png, bgHex, b, c, s, x, y, r, sat, sep, brd, rad, sm, gd, showTxt, uName, uDate)
+        compositeImage(png, bgHex, b, c, s, x, y, r, sat, sep, brd, rad, sm, gd, showTxt, uName, uDate, sUrl, sScale, uStudio)
       ));
       setCompositedPNGs(comps);
 
@@ -360,8 +393,8 @@ export default function PreviewPage() {
     const bgHex = allBgs.find(b => b.id === selectedBg)?.hex ?? '#ffffff';
     const count = Number(selectedCount) || 1;
     // Generate new images, ensuring no infinite recursion loops
-    await compositeAll(processedPNGs, bgHex, count, brightness, contrast, scale, offsetX, offsetY, rotation, saturation, sepia, useBorder, borderRadius, smoothness, showGuides, showNameOverlay, userName, userDate);
-  }, [processedPNGs, selectedBg, selectedCount, brightness, contrast, scale, offsetX, offsetY, rotation, saturation, sepia, useBorder, borderRadius, smoothness, showGuides, showNameOverlay, userName, userDate, compositeAll]);
+    await compositeAll(processedPNGs, bgHex, count, brightness, contrast, scale, offsetX, offsetY, rotation, saturation, sepia, useBorder, borderRadius, smoothness, showGuides, showNameOverlay, userName, userDate, selectedSuit, suitScale, useStudioLight);
+  }, [processedPNGs, selectedBg, selectedCount, brightness, contrast, scale, offsetX, offsetY, rotation, saturation, sepia, useBorder, borderRadius, smoothness, showGuides, showNameOverlay, userName, userDate, selectedSuit, suitScale, useStudioLight, compositeAll]);
 
   useEffect(() => {
     updateGlobalState();
@@ -431,6 +464,8 @@ export default function PreviewPage() {
     setShowNameOverlay(false);
     setUserName('');
     setUserDate(new Date().toLocaleDateString('en-GB'));
+    setSelectedSuit(null);
+    setSuitScale(1.0);
   };
 
   const handleDownload = () => {
@@ -438,6 +473,9 @@ export default function PreviewPage() {
     sessionStorage.setItem('preview_bg', selectedBg);
     sessionStorage.setItem('preview_sheet', isCustomCount ? 'custom' : selectedSheet);
     sessionStorage.setItem('preview_count', String(Number(selectedCount) || 1));
+    sessionStorage.setItem('preview_custom_w', customWidth);
+    sessionStorage.setItem('preview_custom_h', customHeight);
+    sessionStorage.setItem('preview_custom_dpi', customDPI);
     sessionStorage.setItem('composited_image', compositedPNGs[0]);
     sessionStorage.setItem('grid_image', gridImage);
     router.push('/download');
@@ -623,6 +661,7 @@ export default function PreviewPage() {
             <div style={{ display: 'flex', background: '#f1f5f9', padding: 6, borderRadius: 16, gap: 6, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
               {([
                 { id: 'colors', label: lang === 'en' ? 'Colors' : 'Rang', icon: Palette },
+                { id: 'wardrobe', label: lang === 'en' ? 'Suits' : 'Kapde', icon: Layers },
                 { id: 'edit', label: lang === 'en' ? 'Edit' : 'Fix', icon: Sliders }
               ] as const).map(tab => {
                 const Icon = tab.icon;
@@ -779,18 +818,55 @@ export default function PreviewPage() {
                         setSaturation(108);
                         setSmoothness(25);
                         setScale(1.02);
+                        setUseStudioLight(true);
                       }}
                       style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px', background: 'rgba(103, 58, 183, 0.1)', border: 'none', borderRadius: 12, color: '#673AB7', fontSize: 13, fontWeight: 700, cursor: 'pointer', marginTop: 8 }}
                     >
                       <Wand2 size={16} /> {lang === 'en' ? 'Auto-Enhance' : 'Magic Boost'}
                     </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(59, 130, 246, 0.05)', padding: '10px 14px', borderRadius: 10, border: '1px solid rgba(59, 130, 246, 0.1)', marginTop: 8 }}>
+                       <div style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <Sun size={14} /> {lang === 'en' ? 'Studio Lighting' : 'Studio Light'}
+                       </div>
+                       <button
+                         onClick={() => setUseStudioLight(!useStudioLight)}
+                         style={{ padding: '4px 12px', background: useStudioLight ? '#2563eb' : '#ffffff', border: '1px solid #2563eb', borderRadius: 6, color: useStudioLight ? '#ffffff' : '#2563eb', fontSize: 10, fontWeight: 800, cursor: 'pointer' }}
+                       >
+                         {useStudioLight ? 'ON' : 'OFF'}
+                       </button>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
+            {activeTab === 'wardrobe' && (
+              <div className="card" style={{ padding: 24 }}>
+                <div style={{ marginBottom: 24 }}>
+                  <h3 style={{ fontWeight: 700, fontSize: 13, color: '#475569', marginBottom: 12, textTransform: 'uppercase' }}>Magic Wardrobe</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                      <button onClick={() => setSelectedSuit(null)} style={{ border: selectedSuit === null ? '2px solid #673AB7' : '1px solid #e2e8f0', borderRadius: 8, padding: 8, background: '#fff', cursor: 'pointer', fontWeight: 600 }}>None</button>
+                      <button onClick={() => setSelectedSuit('/suits/black.png')} style={{ border: selectedSuit === '/suits/black.png' ? '2px solid #673AB7' : '1px solid #e2e8f0', borderRadius: 8, padding: 8, background: '#fff', cursor: 'pointer' }}><img src="/suits/black.png" style={{width: '100%'}} alt="Black Suit" /></button>
+                      <button onClick={() => setSelectedSuit('/suits/grey.png')} style={{ border: selectedSuit === '/suits/grey.png' ? '2px solid #673AB7' : '1px solid #e2e8f0', borderRadius: 8, padding: 8, background: '#fff', cursor: 'pointer' }}><img src="/suits/grey.png" style={{width: '100%'}} alt="Grey Suit" /></button>
+                  </div>
+                </div>
+                {selectedSuit && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <span style={{ fontSize: 11, color: '#64748b', fontWeight: 700 }}>Shoulder Width (Suit Scale)</span>
+                          <input type="range" min="0.5" max="1.5" step="0.05" value={suitScale} onChange={e => setSuitScale(Number(e.target.value))} style={{ width: '100%', accentColor: '#673AB7' }} />
+                        </div>
+                        <p style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>
+                          <strong>Tip:</strong> Drag your picture up or down to align your neck with the collar. Use the slider above to match the shoulder width.
+                        </p>
+                    </div>
+                )}
+              </div>
+            )}
 
-            {/* Sheet size (Always visible or in tabs?) - Let's keep it visible at the bottom of the panel */}
+
+            {/* Sheet size */}
             <div className="card" style={{ padding: 24, border: isCustomCount ? '2px solid #673AB7' : '1px solid rgba(0,0,0,0.05)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <h3 style={{ fontWeight: 700, fontSize: 13, color: '#475569', textTransform: 'uppercase', margin: 0 }}>Sheet Size / Photo Count</h3>
