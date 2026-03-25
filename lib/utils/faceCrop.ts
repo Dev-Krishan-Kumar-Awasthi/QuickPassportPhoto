@@ -1,5 +1,5 @@
 let modelsLoaded = false;
-const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+const MODEL_URL = '/models';
 
 export async function loadFaceModels() {
   if (modelsLoaded) return;
@@ -18,19 +18,59 @@ export async function loadFaceModels() {
 /**
  * Detects the face in a transparent PNG and calculates the optimal crop
  * for a biometric passport photo (3.5cm x 4.5cm).
+ * Uses a multi-scale approach to detect small faces in full-body photos.
  */
 export async function getBiometricCrop(imgElement: HTMLImageElement) {
   await loadFaceModels();
   const faceapi = await import('@vladmandic/face-api');
 
-  const detections = await faceapi.detectSingleFace(
-    imgElement, 
-    new faceapi.TinyFaceDetectorOptions()
-  ).withFaceLandmarks();
+  // Helper function to detect face at a specific scale
+  const detectAtScale = async (scale: number) => {
+    let input: HTMLImageElement | HTMLCanvasElement = imgElement;
+    
+    if (scale !== 1) {
+      const canvas = document.createElement('canvas');
+      canvas.width = imgElement.width * scale;
+      canvas.height = imgElement.height * scale;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+      input = canvas;
+    }
 
-  if (!detections) return null;
+    const detections = await faceapi.detectSingleFace(
+      input, 
+      new faceapi.TinyFaceDetectorOptions({ inputSize: 608, scoreThreshold: 0.3 })
+    ).withFaceLandmarks();
 
-  const { detection, landmarks } = detections;
+    if (!detections) return null;
+
+    // Scale coordinates back down
+    return {
+      detection: {
+        box: {
+          x: detections.detection.box.x / scale,
+          y: detections.detection.box.y / scale,
+          width: detections.detection.box.width / scale,
+          height: detections.detection.box.height / scale,
+        }
+      },
+      landmarks: {
+        getLeftEye: () => detections.landmarks.getLeftEye().map(p => ({ x: p.x / scale, y: p.y / scale })),
+        getRightEye: () => detections.landmarks.getRightEye().map(p => ({ x: p.x / scale, y: p.y / scale })),
+        getJawOutline: () => detections.landmarks.getJawOutline().map(p => ({ x: p.x / scale, y: p.y / scale })),
+        getNose: () => detections.landmarks.getNose().map(p => ({ x: p.x / scale, y: p.y / scale })),
+      }
+    };
+  };
+
+  // Try multiple scales to catch small faces in full body photos
+  let result = await detectAtScale(1);
+  if (!result) result = await detectAtScale(2); // Try 2x scale
+  if (!result) result = await detectAtScale(4); // Try 4x scale for very small faces
+
+  if (!result) return null;
+
+  const { detection, landmarks } = result;
   const { box } = detection;
   
   // Passport photo guidelines:
@@ -73,3 +113,4 @@ export async function getBiometricCrop(imgElement: HTMLImageElement) {
     }
   };
 }
+

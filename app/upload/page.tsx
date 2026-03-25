@@ -1,23 +1,26 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Upload, Image as ImageIcon, X, Zap, ChevronLeft, AlertCircle, CheckCircle2, Camera, Check, Shield } from 'lucide-react';
 import Navbar from '../_components/Navbar';
 import { translations, Language } from '../../lib/translations';
+import { loadFaceModels } from '../../lib/utils/faceCrop';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_MB = 10;
 
 export default function UploadPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lang, setLang] = useState<Language>('en');
+  const [isPreloading, setIsPreloading] = useState(false);
 
   useEffect(() => {
     const handleLangChange = () => {
@@ -26,8 +29,20 @@ export default function UploadPage() {
     };
     handleLangChange();
     window.addEventListener('languageChange', handleLangChange);
+
+    // If user came from home page fresh start, clear old session data
+    if (searchParams.get('fresh') === '1') {
+      sessionStorage.removeItem('processed_images');
+      sessionStorage.removeItem('processed_image');
+      sessionStorage.removeItem('upload_dataurl');
+      sessionStorage.removeItem('upload_name');
+      sessionStorage.removeItem('face_detected');
+      sessionStorage.removeItem('face_landmarks');
+      sessionStorage.removeItem('crop_box');
+    }
+
     return () => window.removeEventListener('languageChange', handleLangChange);
-  }, []);
+  }, [searchParams]);
 
   const t = translations[lang];
 
@@ -44,6 +59,24 @@ export default function UploadPage() {
     setFile(f);
     const url = URL.createObjectURL(f);
     setPreview(url);
+    
+    // START PRE-LOADING AI MODELS IMMEDIATELY
+    preloadAI();
+  };
+
+  const preloadAI = async () => {
+    if (isPreloading) return;
+    setIsPreloading(true);
+    console.log('Pre-loading AI models...');
+    try {
+      // Pre-load face detection
+      await loadFaceModels();
+      // Pre-load background removal (triggers chunk download)
+      await import('@imgly/background-removal');
+      console.log('AI models pre-loaded successfully');
+    } catch (e) {
+      console.warn('AI pre-loading failed (will retry in processing page):', e);
+    }
   };
 
   const onDrop = useCallback((e: React.DragEvent) => {

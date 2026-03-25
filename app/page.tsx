@@ -27,7 +27,7 @@ const steps = [
 ];
 
 const plans = [
-  { name: 'Free Forever', price: '₹0', period: 'during beta', desc: 'No signup. No hidden fees. Just high-quality photos.', features: ['Unlimited downloads', 'No watermarks', 'All sheet sizes (4x6, A4)', 'High-res 300 DPI PDF', 'Privacy-first (Auto-delete)'], cta: 'Start Creating Now', href: '/upload', highlighted: true },
+  { name: 'Free Forever', price: '₹0', period: 'during beta', desc: 'No signup. No hidden fees. Just high-quality photos.', features: ['Unlimited downloads', 'No watermarks', 'All sheet sizes (4x6, A4)', 'High-res 300 DPI PDF', 'Privacy-first (Auto-delete)'], cta: 'Start Creating Now', href: '/upload?fresh=1', highlighted: true },
 ];
 
 const testimonials = [
@@ -111,7 +111,7 @@ export default function LandingPage() {
           </p>
 
           <div className="scroll-animate" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 64 }}>
-            <Link href="/upload" className="btn-primary" style={{ fontSize: 16, padding: '16px 32px', boxShadow: '0 10px 25px rgba(52, 152, 219, 0.3)' }}>
+            <Link href="/upload?fresh=1" className="btn-primary" style={{ fontSize: 16, padding: '16px 32px', boxShadow: '0 10px 25px rgba(52, 152, 219, 0.3)' }}>
               <Upload size={18} /> {t.uploadButton}
             </Link>
             <Link href="#how-it-works" style={{ fontSize: 16, padding: '16px 32px', color: '#334155', border: '1px solid rgba(0,0,0,0.1)', borderRadius: 8, display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none', transition: 'all 0.3s', background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(10px)' }}
@@ -283,7 +283,7 @@ export default function LandingPage() {
           </div>
 
           <div className="scroll-animate" style={{ textAlign: 'center', marginTop: 48 }}>
-            <Link href="/upload" className="btn-primary" style={{ fontSize: 16, padding: '16px 32px' }}>
+            <Link href="/upload?fresh=1" className="btn-primary" style={{ fontSize: 16, padding: '16px 32px' }}>
               <Zap size={18} /> Try It Now — Free
             </Link>
           </div>
