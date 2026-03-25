@@ -36,9 +36,16 @@ export default function ProcessingPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState('Initializing...');
   const [tipIndex, setTipIndex] = useState(0);
+  const [isModelCached, setIsModelCached] = useState(false);
   const hasRun = useRef(false);
 
-  // Auto-rotate tips every 3 seconds
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('ai_model_loaded')) {
+      setIsModelCached(true);
+    }
+  }, []);
+
+  // Auto-rotate tips every 4 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setTipIndex((prev) => (prev + 1) % TIPS.length);
@@ -50,15 +57,15 @@ export default function ProcessingPage() {
     if (hasRun.current) return;
     hasRun.current = true;
 
-    const storedFile = sessionStorage.getItem('upload_dataurl');
-
-    if (!storedFile) {
-      router.replace('/upload');
-      return;
+    if (typeof window !== 'undefined') {
+      const storedFile = sessionStorage.getItem('upload_dataurl');
+      if (!storedFile) {
+        router.replace('/upload');
+        return;
+      }
+      setPreview(storedFile);
+      runProcessing(storedFile);
     }
-
-    setPreview(storedFile);
-    runProcessing(storedFile);
   }, [router]);
 
   const setStepProgress = (step: number, prog: number, msg: string) => {
@@ -130,7 +137,7 @@ export default function ProcessingPage() {
         const { removeBackground } = await import('@imgly/background-removal');
         
         // Notify user about the model download on first run
-        if (!window.localStorage.getItem('ai_model_loaded')) {
+        if (typeof window !== 'undefined' && !localStorage.getItem('ai_model_loaded')) {
           setStepProgress(2, 50, 'Downloading AI Model (first time only)...');
         }
 
@@ -156,7 +163,9 @@ export default function ProcessingPage() {
         
         clearInterval(interval);
         processedBase = await blobToDataUrl(resultBlob);
-        window.localStorage.setItem('ai_model_loaded', 'true');
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('ai_model_loaded', 'true');
+        }
         setStepProgress(2, 80, 'Subject isolated successfully!');
 
       } catch (e) {
@@ -288,7 +297,7 @@ export default function ProcessingPage() {
             {/* Note */}
             <div style={{ marginTop: 24, padding: 12, background: 'rgba(245, 158, 11, 0.05)', borderRadius: 12, border: '1px solid rgba(245, 158, 11, 0.1)' }}>
               <p style={{ color: '#d97706', fontSize: 12, fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                ⏳ {window.localStorage.getItem('ai_model_loaded') ? 'Re-using cached AI model...' : 'First run downloads AI models (~40MB).'}
+                ⏳ {isModelCached ? 'Re-using cached AI model...' : 'First run downloads AI models (~40MB).'}
               </p>
             </div>
           </>
@@ -319,6 +328,7 @@ function delay(ms: number) {
 
 function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') return resolve('');
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = reject;
