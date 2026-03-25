@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+export const dynamic = 'force-dynamic';
+
+import { Suspense, useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Upload, Image as ImageIcon, X, Zap, ChevronLeft, AlertCircle, CheckCircle2, Camera, Check, Shield } from 'lucide-react';
+import { Upload, Image as ImageIcon, X, Zap, ChevronLeft, AlertCircle, CheckCircle2, Camera, Check, Shield, Loader2 } from 'lucide-react';
 import Navbar from '../_components/Navbar';
 import { translations, Language } from '../../lib/translations';
 import { loadFaceModels } from '../../lib/utils/faceCrop';
@@ -11,7 +13,7 @@ import { loadFaceModels } from '../../lib/utils/faceCrop';
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_MB = 10;
 
-export default function UploadPage() {
+function UploadPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -126,7 +128,6 @@ export default function UploadPage() {
 
         try {
           sessionStorage.setItem('upload_dataurl', compressedDataUrl);
-          // Removed redundant 'upload_preview' to save space
           sessionStorage.setItem('upload_name', file.name);
           router.push('/processing');
         } catch (e) {
@@ -200,7 +201,6 @@ export default function UploadPage() {
         ) : (
           <div style={{ position: 'relative' }}>
             <div style={{ borderRadius: 24, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={preview} alt="Preview" style={{ width: '100%', maxHeight: 400, objectFit: 'cover', display: 'block' }} />
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to top, rgba(5,5,16,0.8), transparent)' }} />
               <div style={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
@@ -229,7 +229,6 @@ export default function UploadPage() {
           onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
         />
 
-        {/* Error */}
         {error && (
           <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, display: 'flex', gap: 10, alignItems: 'center', color: '#fca5a5', fontSize: 14 }}>
             <AlertCircle size={16} />
@@ -237,7 +236,6 @@ export default function UploadPage() {
           </div>
         )}
 
-        {/* Upload Guide */}
         <div style={{ background: '#ffffff', borderRadius: 24, padding: 32, border: '1px solid rgba(0,0,0,0.05)', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', marginTop: 40 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
             <Camera size={20} color="#673AB7" />
@@ -275,7 +273,6 @@ export default function UploadPage() {
           </div>
         </div>
 
-        {/* Process button */}
         <button
           onClick={handleProcess}
           disabled={!file}
@@ -291,5 +288,17 @@ export default function UploadPage() {
         </button>
       </div>
     </main>
+  );
+}
+
+export default function UploadPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+        <Loader2 className="animate-spin" size={32} color="#673AB7" />
+      </div>
+    }>
+      <UploadPageContent />
+    </Suspense>
   );
 }
